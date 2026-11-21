@@ -3,10 +3,14 @@
 A practical, agent-readable guide to making a Samsung Tizen TV quieter and
 more useful as an HDMI display.
 
-This project documents work performed on one **Samsung UN75U8000FFXZA (2025
-U8000F)**. It includes **Quiet Home**, a native launcher with a colorful,
-English-language interface, lightweight settings, local app cards and a
-shortcut to native Bluetooth controller pairing.
+This project documents work performed on two Samsung Tizen TVs:
+- **Samsung UN75U8000FFXZA (2025 75" U8000F)** running Tizen 9.0 (`T-KSU2EFAKUC-0090-1300.9`)
+- **Samsung QN75Q90TAFXZA (2020 75" Q90T QLED)** running Tizen 5.5 (`T-NKMAKUC-2743.0`)
+
+It includes **Quiet Home**, a native launcher with a colorful,
+English-language interface, Dark/Light Mode theme support, lightweight quick
+settings, live sound output device switching, local app cards and a shortcut to
+native Bluetooth controller pairing.
 
 ![Quiet Home layout illustration](docs/quiet-home-preview.svg)
 
@@ -58,23 +62,38 @@ Root access is reacquired from the computer when maintenance requires it.
 
 ## Tested scope and current status
 
-| Item | Recorded result |
-|---|---|
-| Model | `UN75U8000FFXZA` |
-| Firmware | `T-KSU2EFAKUC-0090-1300.9` |
-| Platform | Tizen 9.0, Linux 5.4.261, ARMv7; .NET runtime 6.0.9 |
-| Temporary root | Authenticated UID/EUID 0; session staging cleaned; passwd/SDB key unchanged |
-| Home/startup | Quiet Home launch verified after a full restart |
-| Inputs and everyday controls | HDMI switching, volume and mute verified; native settings remain available |
-| Controller | Native DualSense pairing and launcher navigation verified |
-| Cleanup | Package flags and selected service-stop conditions checked; a subset survives restart |
-| App preloading | Vendor refreshes can restore the preference; no permanent enforcement daemon |
-| Netflix | More available memory after closing background apps; perceived input lag **not yet confirmed fixed** |
+| Item | `UN75U8000FFXZA` (2025 U8000F) | `QN75Q90TAFXZA` (2020 Q90T QLED) |
+|---|---|---|
+| Firmware | `T-KSU2EFAKUC-0090-1300.9` | `T-NKMAKUC-2743.0` (`B1052220/B60101 , BT - S`) |
+| Platform | Tizen 9.0, Linux 5.4.261, ARMv7; .NET 6.0.9 | Tizen 5.5, Linux 4.9.185, ARMv7; .NET Core 3.1.0 |
+| Access / DB Modification | Temporary UID/EUID 0 (`CVE-2022-26330`) | `uid=901(sdk)`, `context="System"`, group `1051(system_share)` + `User::Home` transmute staging (`CVE-2022-26330` patched) |
+| Launcher Packaging | Replaced `BixbyPromotion.dll` in `com.samsung.tv.bixby-promotion` | Standalone Partner-signed TPK (`org.quiettizen.home`) with managed `DotnetPolicyChecker` P/Invoke whitelist stubs |
+| Home & Startup | Verified after full restart | Verified after full restart (`XF86Home`, `XF86Display`, `XF86SysMenu`, `XF86More`, `app_onboot='true'`) |
+| Home Button Toggle | Opens Quiet Home | Opens Quiet Tizen when closed; closes back to current HDMI input when already open (`on_selector='~with-package:org.quiettizen.home'`) |
+| Inputs & Everyday Controls | HDMI 1–3 (`13..15`), volume, mute, brightness, Game Mode, sleep timer | HDMI 4 PC Monitor (`16`), HDMI 2 Consoles (`14`), HDMI 1 Chromecast (`13`), HDMI 3 eARC Soundbar (`15`), volume, mute, brightness, Game Mode, sleep timer |
+| Sound Output Selector | Native settings shortcut | Live selector on Home dock & Quick Settings cycling `HDMI eARC (2)` $\rightarrow$ `TV Speaker (0)` $\rightarrow$ `Optical (1)` |
+| Voice Control | Disabled in case study | Retained with live UI toggle tile (`db/si_service/voice_recog_enable` & `db/multi-assistant/prelaunch_mode`) |
+| Theme & Focus UI | Light theme (`Free My TV` palette) | Dark Mode default + Light Mode toolbar toggle, `Quiet Tizen` 512×512 icon, and double-stroke vector focus highlight rings (`#38BDF8` + `#FFFFFF`) |
+| Cleanup & Memory | 54 app records disabled; `MemAvailable` `~509 MiB` $\rightarrow$ `~921 MiB` | 20 app records disabled across 5 snapshotted phases (`voice` retained); `MemAvailable` `479 MiB` $\rightarrow$ `621 MiB`, `SwapUsed` `854 MiB` $\rightarrow$ `588 MiB` after restart |
 
-The native launcher and underlying techniques were exercised on that TV.
-The **generalized scripts in this public release were checked locally and
-compiled where applicable; they have not been replayed end-to-end on a second
-TV**. This matters especially for private Samsung APIs and registry schemas.
+## Specific Changes & Adaptations for `QN75Q90TAFXZA` (Tizen 5.5, `T-NKMAKUC-2743.0`)
+
+Full architectural details are documented in [docs/10-qn75q90tafxza-tizen55.md](docs/10-qn75q90tafxza-tizen55.md):
+
+1. **Database Updates Without UID 0 (`system_share` & `User::Home` Transmute)**:
+   - On 2026 firmware `T-NKMAKUC-2743.0`, `CVE-2022-26330` is patched. Because `/opt/dbspace` is `0775 root:system_share` (no sticky bit) and the Developer Mode SDB foothold runs in group `1051(system_share)` with SMACK label `System`, `.app-context.db` and `.pkgmgr_parser.db` are staged in `/opt/usr/home/owner/.applications/dbspace` (`access="User::Home" transmute="TRUE"`, `PRAGMA journal_mode = PERSIST;`, `umask 000`) and moved atomically into `/opt/dbspace/` while preserving `.orig` inodes.
+2. **Standalone Partner-Signed TPK (`org.quiettizen.home`) & `DotnetPolicyChecker` Stubs**:
+   - Built via [tools/build_tizen55_tpk.py](tools/build_tizen55_tpk.py). Bundles five tiny managed stub `.dll` assemblies (`libsource-api.dll`, `libvconf.dll`, `libcapi-media-sound-manager-tv.dll`, `libsettings-api.dll`, `libcapi-appfw-app-control.dll`) in `bin/` and `lib/` so `DotnetPolicyChecker.WhiteListManager.AddAppDllAndSoFilesToWhiteList` registers their strong names while CoreCLR P/Invokes the genuine `/usr/lib/*.so` system libraries (`_` SMACK label).
+   - Uses a reflection-free JSON catalog parser (`AppLibrary`) and safe `IntPtr` string marshaling for `libsettings-api.so` (`CSharpGetItemValue`).
+3. **UI Features Added**:
+   - **Dark Mode UI** by default with a persistent Light/Dark Mode toggle button in the top-right toolbar.
+   - **Custom `Quiet Tizen` 512×512 app icon** on the Tizen Apps screen and clean **PC Monitor (`HDMI 4`)** hero card (with `"Ready to work."` removed).
+   - **High-Contrast Vector Focus Highlight Rings**: SVG focus overlays (`focus-hero.svg`, `focus-portrait.svg`, `focus-dock.svg`, `focus-tile.svg`, `focus-app.svg`, `focus-toolbar.svg`) with an outer `#38BDF8` glow and inner `#FFFFFF` border around every selectable UI element, plus highlighted card captions and top navigation tab pills.
+   - **Sound Output Device Selector on Home Menu & Quick Settings**: Displays and cycles the active audio output directly between **`HDMI eARC` (`2`) $\rightarrow$ `TV Speaker` (`0`) $\rightarrow$ `Optical` (`1`)** using `libcapi-media-sound-manager-tv.so.0` (`sound_manager_get/set_speaker_selection`) and `libsettings-api.so` (`soundoutput`).
+   - **Voice Control UI Toggle**: Toggles voice recognition on/off from the Home dock or Quick Settings while keeping voice packages installed.
+4. **Remote Key Routing & HDMI Source-Switching Fixes**:
+   - **Home Button (`XF86Home`) Open/Close Toggle**: Configured `key_filter` in `/opt/dbspace/.app-context.db` with `on_selector='~with-package:org.quiettizen.home'` so pressing **Home** opens Quiet Tizen when watching HDMI/apps, and closes Quiet Tizen back to the active HDMI input when Quiet Tizen is already in the foreground without `tvctx-manager` immediately re-launching it.
+   - **Prevented Samsung Source-Switching Banner (`CSourceSwitchBanner`) Hang on Close**: `org.tizen.tv-viewer` ignores `CSourceSwitchBanner::t_Hide` when unfocused (`"Ignore to hide when video window focus out"`). Added `CloseLauncher()` (and guarded `SelectSource(int source)` against `vconf_get_int("memory/system/source_type", out cur)`) so closing Quiet Tizen or selecting the already-active HDMI card raises `org.tizen.tv-viewer` directly without calling `connect_source`, and actual input changes raise `org.tizen.tv-viewer` before calling `connect_source`.
 
 ## Walkthrough
 
