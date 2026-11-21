@@ -1,0 +1,37 @@
+{
+  "scope": "Sanitized summary from one owner-authorized QN75Q90TAFXZA TV; not a benchmark dataset",
+  "collected": ["2026-11-15", "2026-11-19"],
+  "device": {
+    "model": "QN75Q90TAFXZA",
+    "firmware": "T-NKMAKUC-2743.0",
+    "tizen": "5.5",
+    "kernel": "4.9.185",
+    "architecture": "ARMv7",
+    "dotnet_runtime": "3.1.0"
+  },
+  "verified": {
+    "sdb_sdk_system_share_dbspace_staging": true,
+    "standalone_partner_signed_tpk_install": true,
+    "dotnet_policy_checker_managed_stub_whitelist": true,
+    "quiet_home_startup_after_full_restart": true,
+    "home_button_open_and_close_toggle": true,
+    "close_without_source_switch_banner_hang": true,
+    "hdmi_1_2_4_switching": true,
+    "sound_output_selector_earc_tv_optical_cycle": true,
+    "voice_control_ui_toggle": true,
+    "dark_mode_and_light_mode_toggle": true,
+    "selected_element_focus_ring_highlight": true,
+    "cleanup_flags_persisted_across_full_restart": true
+  },
+  "memory_snapshots_mib": [
+    {"phase": "before_cleanup", "MemTotal": 1836, "MemUsed": 1316, "MemAvailable": 479, "SwapUsed": 854, "SwapFree": 64},
+    {"phase": "after_cleanup_and_full_restart", "MemTotal": 1836, "MemUsed": 1179, "MemAvailable": 621, "SwapUsed": 588, "SwapFree": 330}
+  ],
+  "limitations": [
+    "CVE-2022-26330 is patched on T-NKMAKUC-2743.0; operations run as uid=901(sdk) with context=System and group 1051(system_share) rather than UID 0.",
+    "Because /opt/usr/share/systemd/system/ is owned by root:root (0755), systemd ConditionPathExists stop-markers cannot be written without UID 0; systemd-launched pisa-service, adagent-service, canalysis-daemon, and context-aware-service still start at boot even though their package records are disabled.",
+    "App-framework daemons disabled in .pkgmgr_parser.db (ghdaemon, ghservice, smartthings-client, samsunghealth-service-tv, adplayer, tvplus, context-aware-agent, content-grab-service) remain stopped across full restart.",
+    "No decrypted network-traffic audit of this TV was performed.",
+    "Future firmware updates may overwrite /opt/dbspace/.app-context.db or /opt/dbspace/.pkgmgr_parser.db routing flags."
+  ]
+}

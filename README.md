@@ -42,11 +42,14 @@ cleanup compatibility.
 | [Quiet Home source](launcher/src/Home.cs) | Native .NET/NUI home, HDMI cards, app library and quick settings |
 | [App catalog](launcher/assets/apps.json) | Example shortcuts for Netflix, YouTube, Prime Video, HBO Max, Disney+, Hulu, Spotify, Apple TV, Tubi, Luna and Xbox |
 | [Artwork tools](docs/06-artwork.md) | Vector/high-resolution artwork sources, optional local downloads and retained image views |
-| [Cleanup profile](profiles/un75u8000ffxza-1300.9.json) | Separately selectable advertising, voice, context, smart-extras, sidebar and TV Plus groups |
+| [Cleanup profile (U8000F)](profiles/un75u8000ffxza-1300.9.json) | Separately selectable advertising, voice, context, smart-extras, sidebar and TV Plus groups for Tizen 9.0 |
+| [Cleanup profile (Q90T)](profiles/qn75q90tafxza-2743.0.json) | Separately selectable cleanup groups for `QN75Q90TAFXZA` (`T-NKMAKUC-2743.0`, Tizen 5.5) |
+| [Tizen 5.5 TPK builder](tools/build_tizen55_tpk.py) | Standalone Partner-signed TPK builder with Dark Mode, focus highlight rings, Sound Output selector, and `DotnetPolicyChecker` stubs |
 | [Cleanup planner](tools/plan_cleanup.py) | Field-specific apply/restore SQL generated from your own fresh snapshot |
 | [Access helper](tools/tv.py) | Explicit-target SDB preflight, temporary authenticated root, bounded transfers and session cleanup checks |
 | [Recipes](recipes) | Snapshot, stop-marker, launcher, settings-bridge and restoration scripts |
-| [Evidence](evidence/observations.json) | Sanitized observations and the limits of what was verified |
+| [Evidence (U8000F)](evidence/observations.json) | Sanitized observations and the limits of what was verified on `UN75U8000FFXZA` |
+| [Evidence (Q90T)](evidence/observations-qn75q90tafxza.json) | Sanitized observations and memory measurements on `QN75Q90TAFXZA` (`T-NKMAKUC-2743.0`) |
 
 Quiet Home uses Tizen's existing display, audio, HDMI and application stack.
 It can become the default Home/startup experience; Samsung's underlying OS
@@ -84,6 +87,7 @@ TV**. This matters especially for private Samsung APIs and registry schemas.
 7. [Diagnose slow streaming apps without overclaiming](docs/07-performance.md).
 8. [Understand privacy findings](docs/08-privacy.md).
 9. [Restore the original experience](docs/09-recovery.md).
+10. [Reproduction on Samsung QN75Q90TAFXZA (Tizen 5.5, `T-NKMAKUC-2743.0`)](docs/10-qn75q90tafxza-tizen55.md).
 
 Read [AGENTS.md](AGENTS.md) before using the tools. TV commands require a
 specific address and a verified firmware declaration. All downloaded

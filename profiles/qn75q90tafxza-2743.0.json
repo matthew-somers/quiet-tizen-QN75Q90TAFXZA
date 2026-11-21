@@ -1,0 +1,84 @@
+{
+  "profile_version": 1,
+  "model": "QN75Q90TAFXZA",
+  "firmware": "T-NKMAKUC-2743.0",
+  "os": "Tizen 5.5",
+  "kernel": "Linux 4.9.185 ARMv7",
+  "runtime": "3.1.0",
+  "registry": "/opt/dbspace/.pkgmgr_parser.db",
+  "groups": {
+    "advertising": {
+      "description": "ACR, viewing-analysis, promotion and advertising components present on QN75Q90TAFXZA (T-NKMAKUC-2743.0). Package names identify purpose; this is not a traffic audit.",
+      "app_ids": [
+        "com.samsung.tizen.samsung-analytics",
+        "org.tizen.acr-service-app",
+        "com.samsung.tv.canalysis-service",
+        "com.samsung.tv.contents-recognition-dbmgr",
+        "com.samsung.tv.adagent-service",
+        "com.samsung.tv.pisa-service",
+        "org.tizen.pisa-control-service",
+        "yL49PNFmjW.PromotionApp",
+        "yL49PNFmjW.service"
+      ]
+    },
+    "voice": {
+      "description": "Bixby, Alexa, wake-word and voice UI. Opt in only if voice functions are unwanted; leave enabled to use the Quiet Tizen Voice Control UI toggle.",
+      "app_ids": [
+        "com.samsung.tv.alexa-client",
+        "com.samsung.tv.alexa-fullscreen-app",
+        "com.samsung.tv.bixby-context-client",
+        "com.samsung.tv.bixby-prov",
+        "com.samsung.tv.bixbycapsuleviewer",
+        "com.samsung.tv.mybixby",
+        "com.samsung.tv.ondevice-voice",
+        "com.samsung.tv.utterance-recommender-app",
+        "com.samsung.tv.utterance-recommender-core",
+        "com.samsung.tv.voiceassistant-music",
+        "com.samsung.tv.wakeup-engine-alexa",
+        "com.samsung.tv.wakeup-engine-bixby",
+        "org.tizen.voice-app",
+        "org.tizen.voice-app-service",
+        "org.tizen.voice-client",
+        "org.tizen.voice-onboarding"
+      ]
+    },
+    "context": {
+      "description": "Context suggestions and content-grab helpers present on QN75Q90TAFXZA.",
+      "app_ids": [
+        "com.samsung.tv.context-aware-agent",
+        "com.samsung.tv.vif",
+        "content-grab-service"
+      ]
+    },
+    "smart-extras": {
+      "description": "SmartThings, gaming-hub background helpers, adplayer and health service present on QN75Q90TAFXZA.",
+      "app_ids": [
+        "com.samsung.tizen.smartthings-client",
+        "com.samsung.tv.adplayer",
+        "com.samsung.tv.ghdaemon",
+        "com.samsung.tv.ghservice",
+        "samsunghealth-service-tv"
+      ]
+    },
+    "light-shell": {
+      "description": "Browser disabled after Quiet Tizen and settings routing are validated.",
+      "app_ids": [
+        "org.tizen.browser"
+      ]
+    },
+    "tv-plus": {
+      "description": "Samsung TV Plus standalone and deeplinker apps on QN75Q90TAFXZA.",
+      "app_ids": [
+        "com.samsung.tv.tvplus",
+        "com.samsung.tv.tvPlusDeeplinker"
+      ]
+    }
+  },
+  "preferences": [
+    {
+      "key": "db/menu/autorun_tv_plus",
+      "type": "bool",
+      "value": "0"
+    }
+  ]
+}
