@@ -451,9 +451,16 @@ def main():
         'for(int i=0;i<3;i++){tabs[i].TextColor=i==page?ink:muted;tabs[i].FontFamily="Quiet Inter "+(i==page?"Semibold":"Medium");tabs[i].BackgroundColor=area==0&&i==page?new Color(1,1,1,.7f):new Color(0,0,0,0);tabs[i].CornerRadius=new Vector4(34,34,34,34);}',
         'for(int i=0;i<3;i++){bool tf=area==0&&i==page;tabs[i].TextColor=tf?white:(i==page?ink:muted);tabs[i].FontFamily="Quiet Inter "+(i==page?"Semibold":"Medium");tabs[i].BackgroundColor=tf?accent:(i==page?(darkMode?new Color(1,1,1,.10f):new Color(0,0,0,.06f)):new Color(0,0,0,0));}',
     )
-    src = src.replace(
-        'if(s.FocusRing!=null)s.FocusRing.Opacity=f?1:0;\n    if(s.Label!=null&&page!=2)s.Label.FontFamily="Quiet Inter "+(f?"Semibold":"Medium");',
-        'if(s.FocusRing!=null){s.FocusRing.Opacity=f?1:0;if(f)s.FocusRing.RaiseToTop();}\n    if(s.Action=="sound-output"&&s.Label!=null)s.Label.Text=ShortSpeakerName();\n    else if(s.Label!=null&&page!=2){s.Label.FontFamily="Quiet Inter "+(f?"Semibold":"Medium");s.Label.TextColor=f?accent:ink;}',
+    def replace_required(text: str, old: str, new: str, name: str) -> str:
+        if old not in text:
+            raise RuntimeError(f"Required patch did not match: {name}")
+        return text.replace(old, new, 1)
+
+    src = replace_required(
+        src,
+        '   if(s.FocusRing!=null)s.FocusRing.Opacity=f?1:0;\n   if(s.Label!=null&&page!=2)s.Label.FontFamily="Quiet Inter "+(f?"Semibold":"Medium");',
+        '   if(s.FocusRing!=null){s.FocusRing.Opacity=f?1:0;if(f)s.FocusRing.RaiseToTop();}\n   if(s.Action=="sound-output"&&s.Label!=null)s.Label.Text=ShortSpeakerName();\n   else if(s.Label!=null&&page!=2){s.Label.FontFamily="Quiet Inter "+(f?"Semibold":"Medium");s.Label.TextColor=f?accent:ink;}',
+        "UpdateFocus() sound-output redraw & highlight",
     )
 
     old_artwork_block = """ void AddAppArtwork(View card,LibraryApp app,int w,int h)
@@ -626,9 +633,17 @@ def main():
         'protected override void OnPause(){base.OnPause();',
         'protected override void OnPause(){base.OnPause();isPaused=true;',
     )
-    src = src.replace(
-        'protected override void OnResume(){base.OnResume();RefreshSource();if(tabs!=null&&page==2){RefreshSettings();UpdateFocus(false);}WriteState("resumed");}',
+    src = replace_required(
+        src,
+        'protected override void OnResume(){base.OnResume();clockTimer?.Start();RefreshSource();if(tabs!=null&&page==2){RefreshSettings();UpdateFocus(false);}WriteState("resumed");}',
         'protected override void OnResume(){base.OnResume();if(CheckExternalCommand())return;if(isPaused){isPaused=false;openedAt=(long)Environment.TickCount;}if(clockTimer!=null)clockTimer.Start();RefreshSource();if(tabs!=null&&(page==2||page==0)){RefreshSettings();UpdateFocus(false);}WriteState("resumed");}',
+        "OnResume() page==0 refresh & redraw",
+    )
+    src = replace_required(
+        src,
+        'void Home(string activity){clockTimer?.Start();RefreshSource();if(tabs!=null){bool unchanged=page==0&&area==1&&editing==""&&selected==SourceIndex();page=0;area=1;editing="";selected=SourceIndex();if(!unchanged)BuildPage();WriteState(activity);}}',
+        'void Home(string activity){clockTimer?.Start();RefreshSource();if(tabs!=null){bool unchanged=page==0&&area==1&&editing==""&&selected==SourceIndex();page=0;area=1;editing="";selected=SourceIndex();if(!unchanged)BuildPage();else{RefreshSettings();UpdateFocus(false);}WriteState(activity);}}',
+        "Home() unchanged page==0 refresh & redraw",
     )
     src = src.replace(
         'protected override void OnAppControlReceived(AppControlReceivedEventArgs e){base.OnAppControlReceived(e);string requested; if(e.ReceivedAppControl.ExtraData.TryGet("quiet_page",out requested)&&requested=="settings")OpenSettings("settings_request");else if(requested=="apps"){page=1;area=1;selected=0;BuildPage();}else Home("home_request");}',
